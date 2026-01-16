@@ -114,7 +114,7 @@ echo ""
 print_status "Current Installer Info:"
 if installer_url=$(aws ssm get-parameter --name "/splunk-s3-installer/installer-url" --query 'Parameter.Value' --output text 2>/dev/null); then
     filename=$(basename "$installer_url")
-    if [[ "$filename" =~ splunk-([0-9]+\.[0-9]+\.[0-9]+)-([a-f0-9]+)-Linux-x86_64\.tgz ]]; then
+    if [[ "$filename" =~ splunk-([0-9]+\.[0-9]+\.[0-9]+)-([a-f0-9]+)\.x86_64\.rpm ]]; then
         version="${BASH_REMATCH[1]}"
         build="${BASH_REMATCH[2]}"
         echo "  Version: $version"
@@ -137,7 +137,7 @@ echo "# Get installer URL"
 echo "INSTALLER_URL=\$(aws ssm get-parameter --name '/splunk-s3-installer/installer-url' --query 'Parameter.Value' --output text)"
 echo ""
 echo "# Download installer"
-echo "aws s3 cp \"\$INSTALLER_URL\" /tmp/splunk-installer.tgz"
+echo "aws s3 cp \"\$INSTALLER_URL\" /tmp/splunk-installer.rpm"
+echo "sudo yum install -y /tmp/splunk-installer.rpm"
 echo ""
-echo "# Verify download"
-echo "file /tmp/splunk-installer.tgz"
+echo "sudo systemctl start splunk"

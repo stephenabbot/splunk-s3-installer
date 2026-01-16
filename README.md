@@ -30,14 +30,15 @@ https://github.com/stephenabbot/splunk-s3-installer.git
   - Access Policy: Account-wide access for any AWS resource in the account
   - Management Tags: `ManagedBy=splunk-s3-installer` for automated cleanup
 
-- **Splunk Installer Object**: `splunk-{version}-{build}-linux-amd64.tgz`
-  - Current: `splunk-10.0.2-e2d18b4767e9-linux-amd64.tgz` (~1.7GB)
+- **Splunk Installer Object**: `rpm/splunk-{version}-{build}.x86_64.rpm`
+  - Current: `rpm/splunk-10.0.2-e2d18b4767e9.x86_64.rpm` (~1.7GB)
   - Storage Class: Standard (no lifecycle policies implemented)
+  - Format: RPM package for Amazon Linux 2 / RHEL-based systems
 
 ### AWS Systems Manager Parameters
 
 - **`/splunk-s3-installer/installer-url`**: Complete S3 URL for the installer
-  - Value: `s3://splunk-installer-{account-id}-{region}/splunk-{version}-{build}-linux-amd64.tgz`
+  - Value: `s3://splunk-installer-{account-id}-{region}/rpm/splunk-{version}-{build}.x86_64.rpm`
   - Type: String
   - Management Tags: `ManagedBy=splunk-s3-installer`
 
@@ -74,7 +75,7 @@ https://github.com/stephenabbot/splunk-s3-installer.git
 
 **Direct Download Strategy**: Constructs download URLs using the pattern:
 ```
-https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}-linux-amd64.tgz
+https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}.x86_64.rpm
 ```
 
 This approach bypasses authentication requirements while ensuring reliable access to specific versions.
@@ -140,10 +141,13 @@ This approach bypasses authentication requirements while ensuring reliable acces
 INSTALLER_URL=$(aws ssm get-parameter --name '/splunk-s3-installer/installer-url' --query 'Parameter.Value' --output text)
 
 # Download installer from S3 (fast, no external download)
-aws s3 cp "$INSTALLER_URL" /tmp/splunk-installer.tgz
+aws s3 cp "$INSTALLER_URL" /tmp/splunk-installer.rpm
 
-# Verify download
-file /tmp/splunk-installer.tgz
+# Install Splunk using yum
+sudo yum install -y /tmp/splunk-installer.rpm
+
+# Start Splunk
+sudo systemctl start splunk
 ```
 
 ### Resource Cleanup

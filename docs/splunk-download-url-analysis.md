@@ -9,18 +9,18 @@
 ### Working URL Pattern
 
 ```
-https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}-linux-amd64.tgz
+https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}.x86_64.rpm
 ```
 
 **Example (Verified Working)**:
 ```
-https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-e2d18b4767e9-linux-amd64.tgz
+https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-e2d18b4767e9.x86_64.rpm
 ```
 
 ### Critical Requirements
 
 1. **Exact build number required**: Cannot use "latest" or generic patterns
-2. **Correct filename format**: Must use `linux-amd64.tgz` (not `Linux-x86_64.tgz`)
+2. **Correct filename format**: Must use `.x86_64.rpm` for Amazon Linux 2 / RHEL-based systems
 3. **Valid version/build combination**: Build numbers are specific to each version
 
 ## Version and Build Number Discovery
@@ -87,17 +87,18 @@ https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-
 # These patterns are obsolete:
 https://download.splunk.com/products/splunk/releases/latest/linux/splunk-latest-Linux-x86_64.tgz
 https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}-Linux-x86_64.tgz
+https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}-linux-amd64.tgz
 ```
 
 ### Current Working Pattern
 
 ```bash
 # This pattern works without authentication:
-https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}-linux-amd64.tgz
+https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}.x86_64.rpm
 ```
 
 **Key Changes**:
-- `Linux-x86_64` → `linux-amd64`
+- Using RPM format for Amazon Linux 2 / RHEL-based systems
 - Build number is mandatory
 - No "latest" URL available
 
@@ -107,7 +108,7 @@ https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{ver
 
 ```bash
 # Test URL accessibility without downloading
-curl -I "https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-e2d18b4767e9-linux-amd64.tgz"
+curl -I "https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-e2d18b4767e9.x86_64.rpm"
 
 # Expected response:
 # HTTP/2 200 
@@ -119,28 +120,28 @@ curl -I "https://download.splunk.com/products/splunk/releases/10.0.2/linux/splun
 
 ```bash
 # Verify downloaded file
-file splunk-10.0.2-e2d18b4767e9-linux-amd64.tgz
-# Expected: gzip compressed data
+file splunk-10.0.2-e2d18b4767e9.x86_64.rpm
+# Expected: RPM package
 
 # Check file size (should be >1GB)
-ls -lh splunk-10.0.2-e2d18b4767e9-linux-amd64.tgz
+ls -lh splunk-10.0.2-e2d18b4767e9.x86_64.rpm
 ```
 
 ## Architecture Compatibility
 
 ### File Format Compatibility
 
-- **amd64** and **x86_64** are the same architecture
-- Splunk's `linux-amd64.tgz` works on all x86_64 systems
-- Compatible with Intel and AMD processors
+- **x86_64** RPM format for RHEL-based systems
+- Compatible with Amazon Linux 2, CentOS, RHEL, Fedora
+- Native package management integration with yum/dnf
 - Works on all current EC2 instance types (t3, m5, c5, r5, etc.)
 
 ### Platform Support
 
 - **EC2 Instances**: All x86_64 instance types supported
-- **Operating Systems**: All Linux distributions (Ubuntu, Amazon Linux, CentOS, RHEL)
-- **Container Platforms**: Docker, Kubernetes, ECS
-- **Local Development**: macOS, Linux, Windows (with WSL)
+- **Operating Systems**: Amazon Linux 2, CentOS, RHEL, Fedora (RHEL-based distributions)
+- **Package Management**: Native yum/dnf integration
+- **Container Platforms**: Docker, Kubernetes, ECS (with RPM-based base images)
 
 ## Operational Considerations
 

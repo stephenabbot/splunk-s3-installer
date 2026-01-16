@@ -157,7 +157,7 @@ aws ssm get-parameters --names '/test'
 curl -s "https://endoflife.date/api/splunk.json" | jq '.[0]'
 
 # Verify installer URL
-curl -I "https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-e2d18b4767e9-linux-amd64.tgz"
+curl -I "https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-e2d18b4767e9.x86_64.rpm"
 ```
 
 ### Recovery Procedures

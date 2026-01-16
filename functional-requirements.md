@@ -93,10 +93,10 @@ This project deploys and manages S3-hosted Splunk Enterprise installer images to
 INSTALLER_URL=$(aws ssm get-parameter --name '/splunk-s3-installer/installer-url' --query 'Parameter.Value' --output text)
 
 # Download installer from S3 (fast, no external download)
-aws s3 cp "$INSTALLER_URL" /tmp/splunk-installer.tgz
+aws s3 cp "$INSTALLER_URL" /tmp/splunk-installer.rpm
 
-# Verify download integrity
-file /tmp/splunk-installer.tgz
+# Install Splunk
+sudo yum install -y /tmp/splunk-installer.rpm
 ```
 
 ### Error Handling

@@ -6,9 +6,10 @@
 
 ## Working wget Commands
 
-### Splunk 10.0.2 (Current)
+### Splunk 10.0.2 rpm
+
 ```bash
-wget -O splunk-10.0.2-e2d18b4767e9-linux-amd64.tgz "https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-e2d18b4767e9-linux-amd64.tgz"
+wget -O splunk-10.0.2-e2d18b4767e9.x86_64.rpm "https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-e2d18b4767e9.x86_64.rpm"
 ```
 
 **Build Number**: `e2d18b4767e9`  
@@ -18,13 +19,14 @@ wget -O splunk-10.0.2-e2d18b4767e9-linux-amd64.tgz "https://download.splunk.com/
 ## URL Pattern
 
 ```
-https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}-linux-amd64.tgz
+https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}.x86_64.rpm
 ```
 
 **Requirements**:
+
 - Exact version number (e.g., `10.0.2`)
 - Correct build number for that version
-- Use `linux-amd64.tgz` format (not `Linux-x86_64.tgz`)
+- Use `.x86_64.rpm` format for Amazon Linux 2 / RHEL-based systems
 
 ## Notes
 

@@ -18,8 +18,8 @@ The project uses the endoflife.date API to determine the latest supported Splunk
 
 Direct download URLs are constructed using known build numbers for each version:
 
-- **Current format**: `https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}-linux-amd64.tgz`
-- **Example**: `https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-e2d18b4767e9-linux-amd64.tgz`
+- **Current format**: `https://download.splunk.com/products/splunk/releases/{version}/linux/splunk-{version}-{build}.x86_64.rpm`
+- **Example**: `https://download.splunk.com/products/splunk/releases/10.0.2/linux/splunk-10.0.2-e2d18b4767e9.x86_64.rpm`
 
 Known build numbers are maintained in the update script:
 - 10.0.2: `e2d18b4767e9`
@@ -41,7 +41,7 @@ Known build numbers are maintained in the update script:
 ### Download Validation
 
 - Verify downloaded file exists and is not empty
-- Check file type using `file` command to ensure it's a gzip archive
+- Check file type using `file` command to ensure it's a valid RPM package
 - Validate file size is reasonable (>1GB for Splunk installer)
 - No checksum validation currently implemented
 
@@ -71,20 +71,13 @@ Projects consuming the S3-hosted installer use this pattern:
 INSTALLER_URL=$(aws ssm get-parameter --name "/splunk-s3-installer/installer-url" --query 'Parameter.Value' --output text)
 
 # Download installer from S3 (fast, no external download)
-aws s3 cp "$INSTALLER_URL" /tmp/splunk-installer.tgz
+aws s3 cp "$INSTALLER_URL" /tmp/splunk-installer.rpm
 
-# Verify download integrity
-if [ -f /tmp/splunk-installer.tgz ] && [ -s /tmp/splunk-installer.tgz ]; then
-    if file /tmp/splunk-installer.tgz | grep -q "gzip compressed"; then
-        echo "SUCCESS: Splunk installer downloaded and validated"
-    else
-        echo "ERROR: Downloaded file is not a valid gzip archive"
-        exit 1
-    fi
-else
-    echo "ERROR: Downloaded file is missing or empty"
-    exit 1
-fi
+# Install Splunk using yum
+sudo yum install -y /tmp/splunk-installer.rpm
+
+# Start Splunk
+sudo systemctl start splunk
 ```
 
 ### Performance Characteristics

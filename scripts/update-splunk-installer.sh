@@ -152,21 +152,21 @@ get_latest_splunk_version() {
 get_current_s3_version() {
     # List objects in S3 bucket and extract version from filename
     local s3_objects
-    s3_objects=$(aws s3 ls "s3://$BUCKET_NAME/" 2>/dev/null | grep -E "splunk-.*\.(tgz|tar\.gz)$" || echo "")
+    s3_objects=$(aws s3 ls "s3://$BUCKET_NAME/rpm/" 2>/dev/null | grep -E "splunk-.*\.rpm$" || echo "")
     
     if [ -z "$s3_objects" ]; then
         echo "none"
         return 0
     fi
     
-    # Extract version from filename - handle both old and new naming conventions
+    # Extract version from filename
     local current_file
     current_file=$(echo "$s3_objects" | awk '{print $4}' | head -1)
     
     local current_version
     if [[ "$current_file" =~ splunk-([0-9]+\.[0-9]+\.[0-9]+)- ]]; then
         current_version="${BASH_REMATCH[1]}"
-        echo "$current_version:$current_file"
+        echo "$current_version:rpm/$current_file"
     else
         echo "none"
     fi
@@ -264,7 +264,7 @@ if [ -z "$BUILD_NUMBER" ]; then
     exit 1
 fi
 
-INSTALLER_FILENAME="splunk-${LATEST_VERSION}-${BUILD_NUMBER}-linux-amd64.tgz"
+INSTALLER_FILENAME="splunk-${LATEST_VERSION}-${BUILD_NUMBER}.x86_64.rpm"
 DOWNLOAD_URL="https://download.splunk.com/products/splunk/releases/${LATEST_VERSION}/linux/${INSTALLER_FILENAME}"
 
 if [ "$NEEDS_UPDATE" = true ]; then
@@ -290,7 +290,7 @@ if [ "$NEEDS_UPDATE" = true ]; then
         exit 0
     fi
     
-    S3_OBJECT_KEY="$INSTALLER_FILENAME"
+    S3_OBJECT_KEY="rpm/$INSTALLER_FILENAME"
     LOCAL_FILE="$CACHE_DIR/$INSTALLER_FILENAME"
     
     # Create cache directory
@@ -314,8 +314,8 @@ if [ "$NEEDS_UPDATE" = true ]; then
         exit 1
     fi
     
-    if ! file "$LOCAL_FILE" | grep -q "gzip compressed"; then
-        print_error "Downloaded file is not a valid gzip archive"
+    if ! file "$LOCAL_FILE" | grep -q "RPM"; then
+        print_error "Downloaded file is not a valid RPM package"
         exit 1
     fi
     
@@ -430,4 +430,5 @@ fi
 echo ""
 echo "🔗 CONSUMING PROJECTS CAN USE:"
 echo "INSTALLER_URL=\$(aws ssm get-parameter --name '/splunk-s3-installer/installer-url' --query 'Parameter.Value' --output text)"
-echo "aws s3 cp \"\$INSTALLER_URL\" /tmp/splunk-installer.tgz"
+echo "aws s3 cp \"\$INSTALLER_URL\" /tmp/splunk-installer.rpm"
+echo "sudo yum install -y /tmp/splunk-installer.rpm"
