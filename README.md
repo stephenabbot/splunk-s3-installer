@@ -266,3 +266,7 @@ sudo systemctl start splunk
 ---
 
 *This project provides a reliable, fast, and secure method for distributing Splunk Enterprise installers within AWS environments while minimizing external dependencies and account access risks.*
+
+---
+
+© 2025 Stephen Abbot - MIT License
