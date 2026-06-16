@@ -45,6 +45,9 @@ fi
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 REGION=${AWS_REGION:-us-east-1}
 DEPLOYED_BY=$(aws sts get-caller-identity --query Arn --output text)
+ACCOUNT_ALIAS=$(aws iam list-account-aliases --query 'AccountAliases[0]' --output text 2>/dev/null || echo "")
+if [ "$ACCOUNT_ALIAS" = "None" ]; then ACCOUNT_ALIAS=""; fi
+ENVIRONMENT=${TAG_ENVIRONMENT:-prd}
 
 # Extract git repository information
 GIT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
@@ -93,13 +96,12 @@ if ! aws s3 ls "s3://$BUCKET_NAME" >/dev/null 2>&1; then
     aws s3api put-bucket-tagging \
         --bucket "$BUCKET_NAME" \
         --tagging "TagSet=[
-            {Key=Project,Value=$PROJECT_NAME},
-            {Key=Repository,Value=$REPOSITORY},
+            {Key=ProjectName,Value=$PROJECT_NAME},
+            {Key=ProjectRepository,Value=$REPOSITORY},
             {Key=Environment,Value=$ENVIRONMENT},
-            {Key=Owner,Value=$OWNER},
-            {Key=CostCenter,Value=$COST_CENTER},
-            {Key=ManagedBy,Value=splunk-s3-installer},
-            {Key=DeployedBy,Value=$DEPLOYED_BY}
+            {Key=ManagedBy,Value=Bash},
+            {Key=DeployedBy,Value=$DEPLOYED_BY},
+            {Key=AccountAlias,Value=$ACCOUNT_ALIAS}
         ]"
     
     # Apply bucket policy for account-wide access
@@ -350,7 +352,13 @@ if [ "$NEEDS_UPDATE" = true ]; then
     aws ssm add-tags-to-resource \
         --resource-type "Parameter" \
         --resource-id "/splunk-s3-installer/installer-url" \
-        --tags Key=ManagedBy,Value=splunk-s3-installer Key=Project,Value=$PROJECT_NAME
+        --tags \
+        "Key=ProjectName,Value=$PROJECT_NAME" \
+        "Key=ProjectRepository,Value=$REPOSITORY" \
+        "Key=Environment,Value=$ENVIRONMENT" \
+        "Key=ManagedBy,Value=Bash" \
+        "Key=DeployedBy,Value=$DEPLOYED_BY" \
+        "Key=AccountAlias,Value=$ACCOUNT_ALIAS"
     
     # Create/update version parameter (without tags on update)
     aws ssm put-parameter \
@@ -363,7 +371,13 @@ if [ "$NEEDS_UPDATE" = true ]; then
     aws ssm add-tags-to-resource \
         --resource-type "Parameter" \
         --resource-id "/splunk-s3-installer/version" \
-        --tags Key=ManagedBy,Value=splunk-s3-installer Key=Project,Value=$PROJECT_NAME
+        --tags \
+        "Key=ProjectName,Value=$PROJECT_NAME" \
+        "Key=ProjectRepository,Value=$REPOSITORY" \
+        "Key=Environment,Value=$ENVIRONMENT" \
+        "Key=ManagedBy,Value=Bash" \
+        "Key=DeployedBy,Value=$DEPLOYED_BY" \
+        "Key=AccountAlias,Value=$ACCOUNT_ALIAS"
     
     print_success "SSM parameters updated"
 else
@@ -386,7 +400,13 @@ else
         aws ssm add-tags-to-resource \
             --resource-type "Parameter" \
             --resource-id "/splunk-s3-installer/installer-url" \
-            --tags Key=ManagedBy,Value=splunk-s3-installer Key=Project,Value=$PROJECT_NAME
+            --tags \
+        "Key=ProjectName,Value=$PROJECT_NAME" \
+        "Key=ProjectRepository,Value=$REPOSITORY" \
+        "Key=Environment,Value=$ENVIRONMENT" \
+        "Key=ManagedBy,Value=Bash" \
+        "Key=DeployedBy,Value=$DEPLOYED_BY" \
+        "Key=AccountAlias,Value=$ACCOUNT_ALIAS"
         
         aws ssm put-parameter \
             --name "/splunk-s3-installer/version" \
@@ -398,9 +418,14 @@ else
         aws ssm add-tags-to-resource \
             --resource-type "Parameter" \
             --resource-id "/splunk-s3-installer/version" \
-            --tags Key=ManagedBy,Value=splunk-s3-installer Key=Project,Value=$PROJECT_NAME
-            --tags "Key=Project,Value=$PROJECT_NAME" "Key=Repository,Value=$REPOSITORY" "Key=Environment,Value=$ENVIRONMENT" "Key=Owner,Value=$OWNER" "Key=CostCenter,Value=$COST_CENTER" "Key=ManagedBy,Value=splunk-s3-installer" "Key=DeployedBy,Value=$DEPLOYED_BY"
-        
+            --tags \
+        "Key=ProjectName,Value=$PROJECT_NAME" \
+        "Key=ProjectRepository,Value=$REPOSITORY" \
+        "Key=Environment,Value=$ENVIRONMENT" \
+        "Key=ManagedBy,Value=Bash" \
+        "Key=DeployedBy,Value=$DEPLOYED_BY" \
+        "Key=AccountAlias,Value=$ACCOUNT_ALIAS"
+
         print_success "SSM parameters updated"
     fi
 fi
